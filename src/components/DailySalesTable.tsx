@@ -5,9 +5,9 @@ import {
   CheckCircle2,
   Clock,
   PlusCircle,
-  Edit3,
-  Calendar,
   AlertTriangle,
+  AlertCircle,
+  Calendar,
 } from 'lucide-react';
 import {
   formatCurrencyVND,
@@ -35,6 +35,7 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
         newHld: acc.newHld + r.newContractStaffToday,
         newCtv: acc.newCtv + r.newAgentsToday,
         reportedCount: acc.reportedCount + (r.isReported ? 1 : 0),
+        warningCount: acc.warningCount + (r.warningStatus !== 'OK' ? 1 : 0),
       }),
       {
         app: 0,
@@ -45,6 +46,7 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
         newHld: 0,
         newCtv: 0,
         reportedCount: 0,
+        warningCount: 0,
       }
     );
   }, [filteredDailyRows]);
@@ -53,18 +55,24 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xs overflow-hidden">
       
       {/* Header */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              Doanh Số Trong Ngày ({formatDateVN(selectedDate)})
+              Bảng Doanh Số Trong Ngày ({formatDateVN(selectedDate)})
             </h2>
             <span className="text-xs bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 font-mono-numbers px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800">
               {totals.reportedCount}/{filteredDailyRows.length} Nhóm Đã Báo Cáo
             </span>
+            {totals.warningCount > 0 && (
+              <span className="text-xs bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 font-semibold px-2 py-0.5 rounded flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" />
+                {totals.warningCount} Nhóm Cần Đôn Đốc
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Chi tiết các chỉ số: App, Loans, Amount, Kích hoạt code HĐLĐ và CTV trong ngày
+            Báo cáo 2 ca: Lần 1 trước 12h00 trưa · Lần 2 trước 19h00 tối. Tự động cảnh báo các nhóm chưa hoàn thành.
           </p>
         </div>
 
@@ -72,10 +80,10 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
           {currentUser.role === 'TEAMLEAD' && (
             <button
               onClick={() => onOpenReportModalForTeamlead && onOpenReportModalForTeamlead(filteredDailyRows[0]?.teamleadId)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors whitespace-nowrap"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors whitespace-nowrap cursor-pointer"
             >
               <PlusCircle className="w-3.5 h-3.5" />
-              Nộp / Cập Nhật Báo Cáo Ngày
+              Nộp Báo Cáo Ca Hôm Nay
             </button>
           )}
         </div>
@@ -87,21 +95,27 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
           <thead>
             <tr className="bg-slate-100/70 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
               <th className="py-3 px-3.5 font-bold text-center w-12">STT</th>
-              <th className="py-3 px-3.5 font-bold min-w-[170px]">Teamlead</th>
-              <th className="py-3 px-3.5 font-bold min-w-[150px]">Giám Sát Phụ Trách</th>
+              <th className="py-3 px-3.5 font-bold min-w-[160px]">Teamlead</th>
+              <th className="py-3 px-3.5 font-bold min-w-[140px]">Giám Sát Phụ Trách</th>
               <th className="py-3 px-3.5 font-bold text-right whitespace-nowrap">App Ngày</th>
               <th className="py-3 px-3.5 font-bold text-right whitespace-nowrap">Loans Ngày</th>
               <th className="py-3 px-3.5 font-bold text-right whitespace-nowrap min-w-[140px]">
                 Amount (Doanh Số Ngày)
               </th>
-              <th className="py-3 px-3.5 font-bold text-center whitespace-nowrap min-w-[150px]">
-                HĐLĐ Kích Hoạt Code
-              </th>
-              <th className="py-3 px-3.5 font-bold text-center whitespace-nowrap min-w-[150px]">
-                CTV Kích Hoạt Code
+              <th className="py-3 px-3.5 font-bold text-center whitespace-nowrap min-w-[130px]">
+                Kích Hoạt HĐLĐ
               </th>
               <th className="py-3 px-3.5 font-bold text-center whitespace-nowrap min-w-[130px]">
-                Trạng Thái Báo Cáo
+                Kích Hoạt CTV
+              </th>
+              <th className="py-3 px-3.5 font-bold text-center whitespace-nowrap min-w-[110px]">
+                Ca 1 (Trước 12h)
+              </th>
+              <th className="py-3 px-3.5 font-bold text-center whitespace-nowrap min-w-[110px]">
+                Ca 2 (Trước 19h)
+              </th>
+              <th className="py-3 px-3.5 font-bold text-center whitespace-nowrap min-w-[160px]">
+                Cảnh Báo Báo Cáo
               </th>
               <th className="py-3 px-3.5 font-bold text-center w-20">Thao Tác</th>
             </tr>
@@ -109,10 +123,16 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
 
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800 font-medium">
             {filteredDailyRows.map((row, index) => {
+              const hasWarning = row.warningStatus !== 'OK';
+
               return (
                 <tr
                   key={row.teamleadId}
-                  className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
+                  className={`transition-colors ${
+                    hasWarning
+                      ? 'bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50/70 dark:hover:bg-amber-950/40'
+                      : 'hover:bg-slate-50/70 dark:hover:bg-slate-800/40'
+                  }`}
                 >
                   <td className="py-3 px-3.5 text-center text-slate-500 font-mono-numbers">
                     {index + 1}
@@ -137,7 +157,7 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
                   </td>
 
                   {/* Loans ngày */}
-                  <td className="py-3 px-3.5 text-right font-mono-numbers font-semibold text-slate-900 dark:text-white">
+                  <td className="py-3 px-3.5 text-right font-mono-numbers font-semibold text-blue-700 dark:text-blue-400">
                     {formatNumber(row.loans)}
                   </td>
 
@@ -168,22 +188,60 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
                     )}
                   </td>
 
-                  {/* Trạng thái báo cáo */}
+                  {/* Ca 1: Trước 12h */}
                   <td className="py-3 px-3.5 text-center">
-                    {row.isReported ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                    {row.shift1Reported ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        Đã chốt
-                        {row.submittedAt && (
-                          <span className="text-[10px] text-slate-400 block font-mono">
-                            {row.submittedAt.split(' ')[1]}
-                          </span>
-                        )}
+                        {row.shift1SubmittedAt ? row.shift1SubmittedAt.split(' ')[1] : 'Đã nộp'}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                         <Clock className="w-3.5 h-3.5" />
-                        Chưa báo cáo
+                        Chưa nộp
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Ca 2: Trước 19h */}
+                  <td className="py-3 px-3.5 text-center">
+                    {row.shift2Reported ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        {row.shift2SubmittedAt ? row.shift2SubmittedAt.split(' ')[1] : 'Đã nộp'}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                        <Clock className="w-3.5 h-3.5" />
+                        Chưa nộp
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Cảnh báo trên bảng doanh số */}
+                  <td className="py-3 px-3.5 text-center">
+                    {row.warningStatus === 'MISSING_BOTH' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-pulse">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        ⚠️ Thiếu 2 ca (12h & 19h)
+                      </span>
+                    )}
+                    {row.warningStatus === 'MISSING_12H' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        ⚠️ Chưa nộp ca 12h
+                      </span>
+                    )}
+                    {row.warningStatus === 'MISSING_19H' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        ⚠️ Chưa nộp ca 19h
+                      </span>
+                    )}
+                    {row.warningStatus === 'OK' && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Đủ 2 ca
                       </span>
                     )}
                   </td>
@@ -192,13 +250,13 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
                   <td className="py-3 px-3.5 text-center">
                     <button
                       onClick={() => onOpenReportModalForTeamlead && onOpenReportModalForTeamlead(row.teamleadId)}
-                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
-                        row.isReported
-                          ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300'
-                          : 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors cursor-pointer ${
+                        hasWarning
+                          ? 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300'
                       }`}
                     >
-                      {row.isReported ? 'Sửa' : 'Nhập'}
+                      {hasWarning ? 'Báo Cáo' : 'Sửa'}
                     </button>
                   </td>
                 </tr>
@@ -217,7 +275,7 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
               <td className="py-3 px-3.5 text-right font-mono-numbers">
                 {formatNumber(totals.app)}
               </td>
-              <td className="py-3 px-3.5 text-right font-mono-numbers">
+              <td className="py-3 px-3.5 text-right font-mono-numbers text-blue-700 dark:text-blue-400">
                 {formatNumber(totals.loans)}
               </td>
               <td className="py-3 px-3.5 text-right font-mono-numbers text-emerald-700 dark:text-emerald-400">
@@ -229,8 +287,16 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
               <td className="py-3 px-3.5 text-center font-mono-numbers text-blue-700 dark:text-blue-400">
                 {totals.activeCodeCtv} Code
               </td>
-              <td className="py-3 px-3.5 text-center text-xs">
-                {totals.reportedCount} Hoàn thành
+              <td colSpan={3} className="py-3 px-3.5 text-center text-xs">
+                {totals.warningCount > 0 ? (
+                  <span className="text-amber-600 dark:text-amber-400 font-bold">
+                    Còn {totals.warningCount} nhóm chưa hoàn thành 2 ca
+                  </span>
+                ) : (
+                  <span className="text-emerald-600 font-bold">
+                    100% các nhóm đã hoàn thành 2 ca
+                  </span>
+                )}
               </td>
               <td></td>
             </tr>

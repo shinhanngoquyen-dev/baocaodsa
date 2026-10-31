@@ -148,20 +148,18 @@ export const KpiSummaryCards: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px]">
-          <span className="text-slate-500">Chốt báo cáo ngày:</span>
-          <div className="flex items-center gap-1 font-semibold">
-            {summaryKPIs.reportedTeamleadsCount === summaryKPIs.totalTeamleadsCount ? (
-              <span className="text-emerald-600 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {summaryKPIs.reportedTeamleadsCount}/{summaryKPIs.totalTeamleadsCount} TL
-              </span>
-            ) : (
-              <span className="text-amber-600 flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                {summaryKPIs.reportedTeamleadsCount}/{summaryKPIs.totalTeamleadsCount} TL
-              </span>
-            )}
+        <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 space-y-1 text-[11px]">
+          <div className="flex items-center justify-between">
+            <span className="text-slate-500">Ca 1 (Trước 12h):</span>
+            <span className={`font-semibold font-mono-numbers ${summaryKPIs.missingShift1Count > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+              {summaryKPIs.totalTeamleadsCount - summaryKPIs.missingShift1Count}/{summaryKPIs.totalTeamleadsCount} Đã nộp
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-slate-500">Ca 2 (Trước 19h):</span>
+            <span className={`font-semibold font-mono-numbers ${summaryKPIs.missingShift2Count > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+              {summaryKPIs.totalTeamleadsCount - summaryKPIs.missingShift2Count}/{summaryKPIs.totalTeamleadsCount} Đã nộp
+            </span>
           </div>
         </div>
       </div>

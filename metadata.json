@@ -1,6 +1,6 @@
 {
-  "name": "Hệ Thống Báo Cáo Doanh Số Tài Chính - Sales Finance Hub",
-  "description": "Hệ thống quản lý và báo cáo doanh số 3 cấp (Giám đốc, 5 Giám sát, 22 Teamlead) chuyên ngành tài chính tiêu dùng với chỉ số MTD, Daily, tuyển dụng và phân bổ mục tiêu.",
+  "name": "Sale North 1 Report - Hệ Thống Báo Cáo Doanh Số",
+  "description": "Sale North 1 Report - Hệ thống quản lý và báo cáo doanh số 3 cấp (Vĩnh Phúc, Thái Nguyên, Hà Nội 1) với chỉ số MTD, Daily 2 ca, cảnh báo và vinh danh.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

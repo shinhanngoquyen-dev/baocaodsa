@@ -71,7 +71,7 @@ export const OrgHierarchyChart: React.FC<OrgHierarchyChartProps> = ({ onSelectTe
             Sơ Đồ Phân Cấp Tổ Chức (3 Cấp Quản Lý)
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Mô hình: Tôi (Giám đốc) → 5 Giám Sát Bán Hàng → 22 Teamleaders (4–5 Teamlead/Giám sát)
+            Mô hình: Tôi (Đức Hải - Admin) → {supervisors.length} Giám Sát → {teamleads.length} Teamleaders
           </p>
         </div>
 
@@ -82,20 +82,20 @@ export const OrgHierarchyChart: React.FC<OrgHierarchyChartProps> = ({ onSelectTe
               supervisors.forEach((s) => (allExpanded[s.id] = true));
               setExpandedSupervisors(allExpanded);
             }}
-            className="px-2.5 py-1 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 font-medium"
+            className="px-2.5 py-1 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 font-medium cursor-pointer"
           >
             Mở rộng tất cả
           </button>
           <button
             onClick={() => setExpandedSupervisors({})}
-            className="px-2.5 py-1 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 font-medium"
+            className="px-2.5 py-1 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 font-medium cursor-pointer"
           >
             Thu gọn tất cả
           </button>
         </div>
       </div>
 
-      {/* Level 1: "Tôi" (Giám đốc Khối) */}
+      {/* Level 1: "Tôi" (Admin Đức Hải) */}
       <div className="flex flex-col items-center">
         <div className="w-full max-w-xl bg-linear-to-r from-emerald-800 to-teal-900 text-white p-5 rounded-2xl shadow-md border border-emerald-700 relative">
           <div className="flex items-start justify-between">
@@ -105,20 +105,20 @@ export const OrgHierarchyChart: React.FC<OrgHierarchyChartProps> = ({ onSelectTe
               </div>
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300">
-                  Cấp 1: Giám Đốc Kinh Doanh (Tôi)
+                  Cấp 1: SM - Sales Manager (Tôi)
                 </span>
                 <h3 className="text-lg font-extrabold text-white">
-                  Nguyễn Văn Bê
+                  Đức Hải (SM)
                 </h3>
                 <div className="text-xs text-emerald-200">
-                  Quản lý toàn bộ 5 Giám sát & 22 Teamlead toàn quốc
+                  Quản lý {supervisors.length} Giám sát & {teamleads.length} Teamlead
                 </div>
               </div>
             </div>
 
             <button
-              onClick={() => switchUser('user_director')}
-              className="text-[11px] bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-lg text-emerald-100 font-medium transition-colors"
+              onClick={() => switchUser('user_admin')}
+              className="text-[11px] bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-lg text-emerald-100 font-medium transition-colors cursor-pointer"
             >
               {currentUser.role === 'DIRECTOR' ? 'Đang kích hoạt' : 'Đăng nhập vai này'}
             </button>

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { KpiSummaryCards } from './components/KpiSummaryCards';
+import { UnifiedDashboardTable } from './components/UnifiedDashboardTable';
+import { DailyHonorBoard } from './components/DailyHonorBoard';
 import { MtdSalesTable } from './components/MtdSalesTable';
 import { DailySalesTable } from './components/DailySalesTable';
 import { OrgHierarchyChart } from './components/OrgHierarchyChart';
@@ -10,17 +12,8 @@ import { AdminTargetView } from './components/AdminTargetView';
 import { DailyReportModal } from './components/DailyReportModal';
 import { AdminTargetModal } from './components/AdminTargetModal';
 import { UserSwitcherModal } from './components/UserSwitcherModal';
-import {
-  FileSpreadsheet,
-  TrendingUp,
-  GitBranch,
-  Settings,
-  PlusCircle,
-  HelpCircle,
-  ShieldCheck,
-  Building2,
-  UserCheck,
-} from 'lucide-react';
+import { UserManagementModal } from './components/UserManagementModal';
+import { TeamleadProfileModal } from './components/TeamleadProfileModal';
 
 function DashboardContent() {
   const { activeView, setActiveView, currentUser } = useApp();
@@ -28,6 +21,8 @@ function DashboardContent() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isUserSwitcherOpen, setIsUserSwitcherOpen] = useState(false);
+  const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
+  const [isTeamleadProfileOpen, setIsTeamleadProfileOpen] = useState(false);
 
   const [targetTeamleadForReport, setTargetTeamleadForReport] = useState<string | undefined>(undefined);
   const [targetTeamleadForAdmin, setTargetTeamleadForAdmin] = useState<string | undefined>(undefined);
@@ -50,6 +45,8 @@ function DashboardContent() {
         onOpenReportModal={() => handleOpenReportModal()}
         onOpenAdminModal={() => handleOpenAdminModal()}
         onOpenUserSwitcher={() => setIsUserSwitcherOpen(true)}
+        onOpenUserManagement={() => setIsUserManagementOpen(true)}
+        onOpenTeamleadProfile={() => setIsTeamleadProfileOpen(true)}
       />
 
       {/* Main Container */}
@@ -69,24 +66,19 @@ function DashboardContent() {
               onNavigateToHierarchy={() => setActiveView('hierarchy')}
             />
 
-            {/* Quick MTD Table on main dashboard */}
-            <div className="space-y-4">
-              <MtdSalesTable
-                onOpenAdminModalForTeamlead={(tlId) => handleOpenAdminModal(tlId)}
-              />
-            </div>
+            {/* BẢNG TỔNG HỢP DOANH SỐ DASHBOARD: TEAMLEAD, MTD SALES, DAILY SALES, 2 CA & CẢNH BÁO */}
+            <UnifiedDashboardTable
+              onOpenReportModalForTeamlead={(tlId) => handleOpenReportModal(tlId)}
+              onOpenAdminModalForTeamlead={(tlId) => handleOpenAdminModal(tlId)}
+            />
 
-            {/* Quick Daily Table on main dashboard */}
-            <div className="space-y-4">
-              <DailySalesTable
-                onOpenReportModalForTeamlead={(tlId) => handleOpenReportModal(tlId)}
-              />
-            </div>
+            {/* VINH DANH CÁC TEAMLEAD BÁN TỐT TRONG NGÀY (NẰM DƯỚI BẢNG DOANH SỐ) */}
+            <DailyHonorBoard />
           </div>
         )}
 
         {activeView === 'mtd_table' && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <MtdSalesTable
               onOpenAdminModalForTeamlead={(tlId) => handleOpenAdminModal(tlId)}
             />
@@ -94,15 +86,18 @@ function DashboardContent() {
         )}
 
         {activeView === 'daily_table' && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <DailySalesTable
               onOpenReportModalForTeamlead={(tlId) => handleOpenReportModal(tlId)}
             />
+            
+            {/* Honor board also in daily table view */}
+            <DailyHonorBoard />
           </div>
         )}
 
         {activeView === 'hierarchy' && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <OrgHierarchyChart
               onSelectTeamleadReport={(tlId) => handleOpenReportModal(tlId)}
             />
@@ -110,7 +105,7 @@ function DashboardContent() {
         )}
 
         {activeView === 'admin_targets' && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <AdminTargetView
               onOpenTargetModalForTeamlead={(tlId) => handleOpenAdminModal(tlId)}
             />
@@ -123,7 +118,7 @@ function DashboardContent() {
       <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>
-            Sales Finance Hub · Hệ thống quản lý và báo cáo kinh doanh tài chính 3 cấp
+            Sale North 1 Report · Hệ thống quản lý và báo cáo kinh doanh 3 cấp (Vĩnh Phúc, Thái Nguyên, Hà Nội 1)
           </div>
           <div className="flex items-center gap-2">
             <span>Đang đăng nhập: <strong>{currentUser.name}</strong></span>
@@ -154,6 +149,18 @@ function DashboardContent() {
       <UserSwitcherModal
         isOpen={isUserSwitcherOpen}
         onClose={() => setIsUserSwitcherOpen(false)}
+        onOpenUserManagement={() => setIsUserManagementOpen(true)}
+        onOpenTeamleadProfile={() => setIsTeamleadProfileOpen(true)}
+      />
+
+      <UserManagementModal
+        isOpen={isUserManagementOpen}
+        onClose={() => setIsUserManagementOpen(false)}
+      />
+
+      <TeamleadProfileModal
+        isOpen={isTeamleadProfileOpen}
+        onClose={() => setIsTeamleadProfileOpen(false)}
       />
 
     </div>

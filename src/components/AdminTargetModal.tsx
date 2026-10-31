@@ -96,7 +96,7 @@ export const AdminTargetModal: React.FC<AdminTargetModalProps> = ({
               Quản Trị: Thiết Lập Mục Tiêu & Code HĐLĐ Active
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Dành cho Tôi (Giám đốc) và Giám sát bán hàng nhập chỉ số quản trị
+              Dành cho Tôi (SM - Sales Manager) và Giám sát bán hàng nhập chỉ số quản trị
             </p>
           </div>
           <button
