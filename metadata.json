@@ -1,0 +1,6 @@
+{
+  "name": "Hệ Thống Báo Cáo Doanh Số Tài Chính - Sales Finance Hub",
+  "description": "Hệ thống quản lý và báo cáo doanh số 3 cấp (Giám đốc, 5 Giám sát, 22 Teamlead) chuyên ngành tài chính tiêu dùng với chỉ số MTD, Daily, tuyển dụng và phân bổ mục tiêu.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
