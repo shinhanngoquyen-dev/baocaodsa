@@ -29,6 +29,7 @@ interface UserSwitcherModalProps {
   onClose: () => void;
   onOpenUserManagement?: () => void;
   onOpenTeamleadProfile?: () => void;
+  onOpenMonthEndModal?: () => void;
 }
 
 export const UserSwitcherModal: React.FC<UserSwitcherModalProps> = ({
@@ -36,6 +37,7 @@ export const UserSwitcherModal: React.FC<UserSwitcherModalProps> = ({
   onClose,
   onOpenUserManagement,
   onOpenTeamleadProfile,
+  onOpenMonthEndModal,
 }) => {
   const {
     currentUser,
@@ -263,7 +265,7 @@ export const UserSwitcherModal: React.FC<UserSwitcherModalProps> = ({
                     )}
                   </div>
                   <p className="text-[11px] text-slate-500 mt-2">
-                    Bạn đang ở phiên làm việc của SM (Sales Manager - Đức Hải). Có toàn quyền quản lý mục tiêu doanh số tháng, điều chỉnh thông tin {teamleads.length} Teamlead & {supervisors.length} Giám sát, và thực hiện reset doanh số cuối tháng.
+                    Bạn đang ở phiên làm việc của SM (Sales Manager). Có toàn quyền quản lý mục tiêu doanh số tháng, điều chỉnh thông tin {teamleads.length} Teamlead & {supervisors.length} Giám sát, và thực hiện reset doanh số cuối tháng.
                   </p>
                 </div>
               </div>
@@ -289,12 +291,19 @@ export const UserSwitcherModal: React.FC<UserSwitcherModalProps> = ({
                 )}
 
                 <button
-                  onClick={handleResetMonth}
-                  className="py-2 px-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 hover:bg-amber-100 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  title="Chỉ Admin mới có quyền reset doanh số vào cuối tháng"
+                  onClick={() => {
+                    if (onOpenMonthEndModal) {
+                      onClose();
+                      onOpenMonthEndModal();
+                    } else {
+                      handleResetMonth();
+                    }
+                  }}
+                  className="py-2 px-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Tải bản sao lưu về máy và thực hiện reset thủ công cuối tháng an toàn"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  Reset Doanh Số Cuối Tháng
+                  Chốt Tháng & Sao Lưu
                 </button>
 
                 <button

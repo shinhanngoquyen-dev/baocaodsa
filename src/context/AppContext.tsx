@@ -10,6 +10,9 @@ import {
   UnifiedDashboardRow,
   SummaryKPIs,
   ReportShift,
+  PreviousMonthDataset,
+  PreviousMonthTeamleadData,
+  MomGrowthRow,
 } from '../types';
 import {
   INITIAL_SUPERVISORS,
@@ -17,7 +20,22 @@ import {
   INITIAL_USERS,
   INITIAL_ADMIN_SETTINGS,
   INITIAL_REPORTS,
+  INITIAL_PREVIOUS_MONTH_DATA,
 } from '../data/initialData';
+
+export interface DailyActiveCodeEntry {
+  activeCodeContractStaff: number;
+  activeCodeAgents: number;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+export interface MonthResetRecord {
+  resetAt: string;
+  resetBy: string;
+  backupDownloaded: boolean;
+  monthReset: string;
+}
 
 interface AppContextType {
   currentUser: User;
@@ -30,11 +48,12 @@ interface AppContextType {
   setSelectedSupervisorFilter: (id: string) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  activeView: 'dashboard' | 'mtd_table' | 'daily_table' | 'hierarchy' | 'admin_targets' | 'submit_report';
-  setActiveView: (view: 'dashboard' | 'mtd_table' | 'daily_table' | 'hierarchy' | 'admin_targets' | 'submit_report') => void;
+  activeView: 'dashboard' | 'mtd_table' | 'daily_table' | 'hierarchy' | 'admin_targets' | 'submit_report' | 'mom_growth';
+  setActiveView: (view: 'dashboard' | 'mtd_table' | 'daily_table' | 'hierarchy' | 'admin_targets' | 'submit_report' | 'mom_growth') => void;
   
   reports: DailyReport[];
   adminSettings: AdminSettings[];
+  dailyActiveCodes: Record<string, DailyActiveCodeEntry>;
 
   // Data actions
   submitDailyReport: (report: Omit<DailyReport, 'id' | 'submittedAt' | 'submittedBy'>) => void;
@@ -42,6 +61,13 @@ interface AppContextType {
   batchUpdateAdminSettings: (updates: { teamleadId: string; updates: Partial<AdminSettings> }[]) => void;
   updateUserProfile: (userId: string, updates: Partial<User>) => void;
   updateTeamleadSelfProfile: (userId: string, birthday: string, phone: string) => void;
+  updateDailyActiveCodes: (
+    teamleadId: string,
+    date: string,
+    activeCodeContractStaff: number,
+    activeCodeAgents: number
+  ) => { success: boolean; message: string };
+  getDailyActiveCodeForTeamlead: (teamleadId: string, date?: string) => DailyActiveCodeEntry;
   createNewSupervisor: (data: {
     name: string;
     username: string;
@@ -65,10 +91,19 @@ interface AppContextType {
   }) => { success: boolean; message: string; teamleadId?: string };
   loginWithCredentials: (username: string, password?: string) => { success: boolean; message?: string };
   switchUser: (userId: string) => void;
-  resetMonthSales: () => { success: boolean; message: string };
+  resetMonthSales: (downloadBackupFirst?: boolean) => { success: boolean; message: string };
+  exportCurrentMonthDataBackup: () => void;
+  importPreviousMonthData: (data: PreviousMonthDataset) => { success: boolean; message: string };
+  updatePreviousMonthRecord: (teamleadId: string, updates: Partial<PreviousMonthTeamleadData>) => void;
+  reloadDefaultPreviousMonthData: () => void;
   resetToDefaultData: () => void;
   exportToCsv: () => void;
   
+  // Dữ liệu tháng trước & So sánh tăng trưởng MoM
+  previousMonthData: PreviousMonthDataset;
+  lastMonthResetInfo: MonthResetRecord | null;
+  momGrowthRows: MomGrowthRow[];
+
   // Computed data
   allMtdRows: MtdSalesRow[];
   allDailyRows: DailySalesRow[];
@@ -89,6 +124,9 @@ const STORAGE_KEYS = {
   TEAMLEADS: 'sales_hub_teamleads_v4',
   REPORTS: 'sales_hub_reports_v4',
   ADMIN_SETTINGS: 'sales_hub_admin_settings_v4',
+  DAILY_ACTIVE_CODES: 'sales_hub_daily_active_codes_v4',
+  PREV_MONTH_DATA: 'sales_hub_prev_month_v4',
+  LAST_RESET_INFO: 'sales_hub_last_reset_info_v4',
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -105,7 +143,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [users, setUsers] = useState<User[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.USERS);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: User[] = JSON.parse(saved);
+        return parsed.map((u) =>
+          u.name.includes('Đức Hải') ? { ...u, name: u.name.replace('Đức Hải', 'SM') } : u
+        );
+      }
     } catch (e) {
       console.warn(e);
     }
@@ -125,7 +168,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [selectedDate, setSelectedDate] = useState<string>('2026-10-30');
   const [selectedSupervisorFilter, setSelectedSupervisorFilter] = useState<string>('ALL');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [activeView, setActiveView] = useState<'dashboard' | 'mtd_table' | 'daily_table' | 'hierarchy' | 'admin_targets' | 'submit_report'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'mtd_table' | 'daily_table' | 'hierarchy' | 'admin_targets' | 'submit_report' | 'mom_growth'>('dashboard');
 
   const [reports, setReports] = useState<DailyReport[]>(() => {
     try {
@@ -145,6 +188,52 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.warn('Failed to parse admin settings from localStorage', e);
     }
     return INITIAL_ADMIN_SETTINGS;
+  });
+
+  const [dailyActiveCodes, setDailyActiveCodes] = useState<Record<string, DailyActiveCodeEntry>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.DAILY_ACTIVE_CODES);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn(e);
+    }
+    // Seed initial active code records from INITIAL_REPORTS
+    const initialMap: Record<string, DailyActiveCodeEntry> = {};
+    INITIAL_REPORTS.forEach((r) => {
+      const key = `${r.teamleadId}_${r.date}`;
+      if (!initialMap[key]) {
+        initialMap[key] = {
+          activeCodeContractStaff: r.activeCodeContractStaff || 0,
+          activeCodeAgents: r.activeCodeAgents || 0,
+          updatedAt: r.submittedAt || new Date().toISOString(),
+          updatedBy: 'Hệ Thống',
+        };
+      } else {
+        initialMap[key].activeCodeContractStaff += (r.activeCodeContractStaff || 0);
+        initialMap[key].activeCodeAgents += (r.activeCodeAgents || 0);
+      }
+    });
+    return initialMap;
+  });
+
+  const [previousMonthData, setPreviousMonthData] = useState<PreviousMonthDataset>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PREV_MONTH_DATA);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn(e);
+    }
+    return INITIAL_PREVIOUS_MONTH_DATA;
+  });
+
+  const [lastMonthResetInfo, setLastMonthResetInfo] = useState<MonthResetRecord | null>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.LAST_RESET_INFO);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn(e);
+    }
+    return null;
   });
 
   const [currentUserId, setCurrentUserId] = useState<string>(() => {
@@ -437,25 +526,63 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateUserProfile(userId, { birthday, phone });
   };
 
-  // Cuối tháng: Chỉ Admin mới có quyền reset doanh số về 0 để mở chu kỳ mới
-  const resetMonthSales = (): { success: boolean; message: string } => {
-    if (currentUser.role !== 'DIRECTOR') {
-      return {
-        success: false,
-        message: 'Chỉ SM (Admin) mới có quyền reset doanh số cuối tháng.',
-      };
+  // Kiểm soát nhập tay số code HĐLĐ và CTV kích hoạt trong ngày (Dành cho Teamlead & SM)
+  const updateDailyActiveCodes = (
+    teamleadId: string,
+    date: string,
+    activeCodeContractStaff: number,
+    activeCodeAgents: number
+  ): { success: boolean; message: string } => {
+    const tl = teamleads.find((t) => t.id === teamleadId);
+    if (!tl) return { success: false, message: 'Không tìm thấy Teamlead.' };
+
+    if (currentUser.role === 'TEAMLEAD' && tl.userId !== currentUser.id) {
+      return { success: false, message: 'Teamleader chỉ được phép điều chỉnh code kích hoạt cho nhóm của mình.' };
     }
-    setReports([]);
-    try {
-      localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify([]));
-    } catch (e) {
-      console.error(e);
+    if (
+      currentUser.role === 'SUPERVISOR' &&
+      tl.supervisorId !== currentUser.managedTeamleadIds?.[0] &&
+      !tl.supervisorName.includes(currentUser.name)
+    ) {
+      return { success: false, message: 'Giám Sát chỉ được phép điều chỉnh code kích hoạt cho các nhóm thuộc line quản lý.' };
     }
+
+    const key = `${teamleadId}_${date}`;
+    const newEntry: DailyActiveCodeEntry = {
+      activeCodeContractStaff: Math.max(0, activeCodeContractStaff),
+      activeCodeAgents: Math.max(0, activeCodeAgents),
+      updatedAt: new Date().toISOString(),
+      updatedBy: currentUser.name || 'Người dùng',
+    };
+
+    setDailyActiveCodes((prev) => {
+      const next = { ...prev, [key]: newEntry };
+      try {
+        localStorage.setItem(STORAGE_KEYS.DAILY_ACTIVE_CODES, JSON.stringify(next));
+      } catch (e) {
+        console.error(e);
+      }
+      return next;
+    });
+
     return {
       success: true,
-      message: 'Đã reset toàn bộ doanh số 11 team về 0 để mở chu kỳ tháng mới thành công!',
+      message: `Đã lưu thành công: ${tl.name} có ${newEntry.activeCodeContractStaff} HĐLĐ & ${newEntry.activeCodeAgents} CTV kích hoạt code!`,
     };
   };
+
+  const getDailyActiveCodeForTeamlead = (teamleadId: string, date: string = selectedDate): DailyActiveCodeEntry => {
+    const key = `${teamleadId}_${date}`;
+    return (
+      dailyActiveCodes[key] || {
+        activeCodeContractStaff: 0,
+        activeCodeAgents: 0,
+        updatedAt: '',
+        updatedBy: '',
+      }
+    );
+  };
+
 
   const resetToDefaultData = () => {
     setUsers(INITIAL_USERS);
@@ -651,8 +778,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const totalApp = (shift1Rep?.app || 0) + (shift2Rep?.app || 0);
       const totalLoans = (shift1Rep?.loans || 0) + (shift2Rep?.loans || 0);
       const totalAmount = (shift1Rep?.volume || 0) + (shift2Rep?.volume || 0);
-      const totalActiveHld = (shift1Rep?.activeCodeContractStaff || 0) + (shift2Rep?.activeCodeContractStaff || 0);
-      const totalActiveCtv = (shift1Rep?.activeCodeAgents || 0) + (shift2Rep?.activeCodeAgents || 0);
+
+      // Số HĐLĐ và CTV kích hoạt code lấy từ cấu hình nhập tay trực tiếp của Teamlead & SM
+      const activeCodeKey = `${tl.id}_${selectedDate}`;
+      const activeEntry = dailyActiveCodes[activeCodeKey];
+      const totalActiveHld = activeEntry !== undefined ? activeEntry.activeCodeContractStaff : 0;
+      const totalActiveCtv = activeEntry !== undefined ? activeEntry.activeCodeAgents : 0;
+
       const totalNewHld = (shift1Rep?.newContractStaff || 0) + (shift2Rep?.newContractStaff || 0);
       const totalNewCtv = (shift1Rep?.newAgents || 0) + (shift2Rep?.newAgents || 0);
 
@@ -689,7 +821,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         note: latestNote,
       };
     });
-  }, [teamleads, reports, selectedDate]);
+  }, [teamleads, reports, selectedDate, dailyActiveCodes]);
 
   const filteredMtdRows = useMemo(() => {
     let rows = allMtdRows;
@@ -904,6 +1036,190 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     document.body.removeChild(link);
   };
 
+  // Xuất file JSON sao lưu toàn bộ số liệu tháng trước khi reset hoặc lưu trữ
+  const exportCurrentMonthDataBackup = () => {
+    const backupData = {
+      appName: 'Sale North 1 Report',
+      monthLabel: 'Tháng 10/2026',
+      exportedAt: new Date().toISOString(),
+      exportedBy: currentUser.name,
+      summary: summaryKPIs,
+      teamleadsSummary: unifiedDashboardRows.map((r) => ({
+        stt: r.stt,
+        teamleadId: r.teamleadId,
+        teamleadName: r.teamleadName,
+        teamleadCode: r.teamleadCode,
+        supervisorName: r.supervisorName,
+        region: r.region,
+        activeContractStaff: r.activeContractStaff,
+        existingAgents: r.existingAgents,
+        newContractStaffMTD: r.newContractStaffMTD,
+        newAgentsMTD: r.newAgentsMTD,
+        totalAppMTD: r.totalAppMTD,
+        totalLoansMTD: r.totalLoansMTD,
+        totalAmountMTD: r.totalAmountMTD,
+        targetVolume: r.targetVolume,
+        completionRate: r.completionRate,
+      })),
+      rawReportsCount: reports.length,
+      rawReports: reports,
+    };
+
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(backupData, null, 2)
+    )}`;
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', jsonString);
+    downloadAnchor.setAttribute(
+      'download',
+      `BaoCao_SaleNorth1_Thang10_2026_Backup_${new Date().toISOString().slice(0, 10)}.json`
+    );
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  // Cuối tháng: Chỉ Admin mới có quyền reset doanh số về 0 để mở chu kỳ mới (thao tác thủ công an toàn)
+  const resetMonthSales = (downloadBackupFirst: boolean = false): { success: boolean; message: string } => {
+    if (currentUser.role !== 'DIRECTOR') {
+      return {
+        success: false,
+        message: 'Chỉ SM (Admin) mới có quyền reset doanh số cuối tháng.',
+      };
+    }
+
+    if (downloadBackupFirst) {
+      exportCurrentMonthDataBackup();
+    }
+
+    setReports([]);
+    setDailyActiveCodes({});
+    try {
+      localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify([]));
+      localStorage.setItem(STORAGE_KEYS.DAILY_ACTIVE_CODES, JSON.stringify({}));
+    } catch (e) {
+      console.error(e);
+    }
+
+    const resetRecord: MonthResetRecord = {
+      resetAt: new Date().toLocaleString('vi-VN'),
+      resetBy: currentUser.name,
+      backupDownloaded: downloadBackupFirst,
+      monthReset: 'Tháng 10/2026',
+    };
+    setLastMonthResetInfo(resetRecord);
+    try {
+      localStorage.setItem(STORAGE_KEYS.LAST_RESET_INFO, JSON.stringify(resetRecord));
+    } catch (e) {
+      console.error(e);
+    }
+
+    return {
+      success: true,
+      message: `Đã hoàn tất chốt và reset toàn bộ doanh số 11 team về 0 để mở chu kỳ tháng mới!${
+        downloadBackupFirst ? ' (Bản sao lưu đã được tải tự động về máy tính)' : ''
+      }`,
+    };
+  };
+
+  // Nhập dữ liệu tháng trước (File JSON)
+  const importPreviousMonthData = (data: PreviousMonthDataset): { success: boolean; message: string } => {
+    if (!data || !Array.isArray(data.records) || data.records.length === 0) {
+      return {
+        success: false,
+        message: 'Tệp dữ liệu không hợp lệ. Vui lòng kiểm tra lại cấu trúc file!',
+      };
+    }
+    setPreviousMonthData(data);
+    try {
+      localStorage.setItem(STORAGE_KEYS.PREV_MONTH_DATA, JSON.stringify(data));
+    } catch (e) {
+      console.error(e);
+    }
+    return {
+      success: true,
+      message: `Đã nhập thành công dữ liệu ${data.monthLabel || 'tháng trước'} (${data.records.length} Teamlead)!`,
+    };
+  };
+
+  const updatePreviousMonthRecord = (teamleadId: string, updates: Partial<PreviousMonthTeamleadData>) => {
+    setPreviousMonthData((prev) => {
+      const updatedRecords = prev.records.map((rec) =>
+        rec.teamleadId === teamleadId ? { ...rec, ...updates } : rec
+      );
+      const nextData = { ...prev, records: updatedRecords };
+      try {
+        localStorage.setItem(STORAGE_KEYS.PREV_MONTH_DATA, JSON.stringify(nextData));
+      } catch (e) {
+        console.error(e);
+      }
+      return nextData;
+    });
+  };
+
+  const reloadDefaultPreviousMonthData = () => {
+    setPreviousMonthData(INITIAL_PREVIOUS_MONTH_DATA);
+    try {
+      localStorage.setItem(STORAGE_KEYS.PREV_MONTH_DATA, JSON.stringify(INITIAL_PREVIOUS_MONTH_DATA));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Tính toán bảng so sánh tăng trưởng cùng kỳ (MoM Growth: Tháng Này vs Tháng Trước)
+  const momGrowthRows = useMemo<MomGrowthRow[]>(() => {
+    return unifiedDashboardRows.map((cur) => {
+      const prev = previousMonthData.records.find((r) => r.teamleadId === cur.teamleadId);
+      const prevAmount = prev ? prev.amount : 0;
+      const prevLoans = prev ? prev.loans : 0;
+      const prevApp = prev ? prev.app : 0;
+      const prevNewStaff = prev ? (prev.newContractStaff || 0) + (prev.newAgents || 0) : 0;
+
+      const curNewStaff = cur.newContractStaffMTD + cur.newAgentsMTD;
+
+      const amountDiff = cur.totalAmountMTD - prevAmount;
+      const amountGrowthPct = prevAmount > 0 ? (amountDiff / prevAmount) * 100 : cur.totalAmountMTD > 0 ? 100 : 0;
+
+      const loansDiff = cur.totalLoansMTD - prevLoans;
+      const loansGrowthPct = prevLoans > 0 ? (loansDiff / prevLoans) * 100 : cur.totalLoansMTD > 0 ? 100 : 0;
+
+      const appDiff = cur.totalAppMTD - prevApp;
+      const appGrowthPct = prevApp > 0 ? (appDiff / prevApp) * 100 : cur.totalAppMTD > 0 ? 100 : 0;
+
+      const newStaffDiff = curNewStaff - prevNewStaff;
+      const newStaffGrowthPct = prevNewStaff > 0 ? (newStaffDiff / prevNewStaff) * 100 : curNewStaff > 0 ? 100 : 0;
+
+      return {
+        stt: cur.stt,
+        teamleadId: cur.teamleadId,
+        teamleadName: cur.teamleadName,
+        teamleadCode: cur.teamleadCode,
+        supervisorName: cur.supervisorName,
+        region: cur.region,
+
+        currentAmount: cur.totalAmountMTD,
+        previousAmount: prevAmount,
+        amountDiff,
+        amountGrowthPct,
+
+        currentLoans: cur.totalLoansMTD,
+        previousLoans: prevLoans,
+        loansDiff,
+        loansGrowthPct,
+
+        currentApp: cur.totalAppMTD,
+        previousApp: prevApp,
+        appDiff,
+        appGrowthPct,
+
+        currentNewStaff: curNewStaff,
+        previousNewStaff: prevNewStaff,
+        newStaffDiff,
+        newStaffGrowthPct,
+      };
+    });
+  }, [unifiedDashboardRows, previousMonthData]);
+
   return (
     <AppContext.Provider
       value={{
@@ -929,10 +1245,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         loginWithCredentials,
         switchUser,
         resetMonthSales,
+        exportCurrentMonthDataBackup,
+        importPreviousMonthData,
+        updatePreviousMonthRecord,
+        reloadDefaultPreviousMonthData,
         resetToDefaultData,
         exportToCsv,
         reports,
         adminSettings,
+        dailyActiveCodes,
+        updateDailyActiveCodes,
+        getDailyActiveCodeForTeamlead,
+        previousMonthData,
+        lastMonthResetInfo,
+        momGrowthRows,
         allMtdRows,
         allDailyRows,
         filteredMtdRows,

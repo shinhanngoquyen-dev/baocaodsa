@@ -45,8 +45,6 @@ export const DailyReportModal: React.FC<DailyReportModalProps> = ({
   const [volume, setVolume] = useState<number>(0);
   const [newContractStaff, setNewContractStaff] = useState<number>(0);
   const [newAgents, setNewAgents] = useState<number>(0);
-  const [activeCodeContractStaff, setActiveCodeContractStaff] = useState<number>(0);
-  const [activeCodeAgents, setActiveCodeAgents] = useState<number>(0);
   const [note, setNote] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
@@ -60,8 +58,6 @@ export const DailyReportModal: React.FC<DailyReportModalProps> = ({
         setVolume(existing.volume || 0);
         setNewContractStaff(existing.newContractStaff || 0);
         setNewAgents(existing.newAgents || 0);
-        setActiveCodeContractStaff(existing.activeCodeContractStaff || 0);
-        setActiveCodeAgents(existing.activeCodeAgents || 0);
         setNote(existing.note || '');
       } else {
         setApp(0);
@@ -69,8 +65,6 @@ export const DailyReportModal: React.FC<DailyReportModalProps> = ({
         setVolume(0);
         setNewContractStaff(0);
         setNewAgents(0);
-        setActiveCodeContractStaff(0);
-        setActiveCodeAgents(0);
         setNote('');
       }
     }
@@ -96,8 +90,8 @@ export const DailyReportModal: React.FC<DailyReportModalProps> = ({
       volume: Number(volume) || 0,
       newContractStaff: Number(newContractStaff) || 0,
       newAgents: Number(newAgents) || 0,
-      activeCodeContractStaff: Number(activeCodeContractStaff) || 0,
-      activeCodeAgents: Number(activeCodeAgents) || 0,
+      activeCodeContractStaff: 0,
+      activeCodeAgents: 0,
       note,
     });
 
@@ -144,7 +138,7 @@ export const DailyReportModal: React.FC<DailyReportModalProps> = ({
               </div>
               <div className="grow">
                 <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                  <span>Khẩu hiệu hành động từ SM Đức Hải</span>
+                  <span>Khẩu hiệu hành động từ SM</span>
                 </div>
                 <p className="text-xs font-extrabold text-slate-900 dark:text-white mt-1 leading-snug italic">
                   “Nếu 1 buổi trôi qua tất cả mọi thứ đều là 0 thì điều đó thật tệ!”
@@ -295,41 +289,18 @@ export const DailyReportModal: React.FC<DailyReportModalProps> = ({
             </div>
           </div>
 
-          {/* Section: Tuyển dụng & Kích hoạt code trong ca */}
+          {/* Section: Tuyển dụng nhân sự mới trong ca */}
           <div className="p-3.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              2. Kích Hoạt Code & Tuyển Mới Trong Ca
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                2. Nhân Sự Tuyển Mới Trong Ca
+              </h3>
+              <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+                (Code kích hoạt sẽ do Teamlead & SM nhập kiểm soát riêng)
+              </span>
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  Số HĐLĐ kích hoạt code:
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={activeCodeContractStaff === 0 ? '' : activeCodeContractStaff}
-                  onChange={(e) => setActiveCodeContractStaff(Math.max(0, parseInt(e.target.value) || 0))}
-                  placeholder="0"
-                  className="w-full px-3 py-2 text-sm font-mono-numbers font-semibold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-hidden focus:border-emerald-600"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  Số CTV kích hoạt code:
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={activeCodeAgents === 0 ? '' : activeCodeAgents}
-                  onChange={(e) => setActiveCodeAgents(Math.max(0, parseInt(e.target.value) || 0))}
-                  placeholder="0"
-                  className="w-full px-3 py-2 text-sm font-mono-numbers font-semibold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-hidden focus:border-emerald-600"
-                />
-              </div>
-
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                   Số NV HĐLĐ tuyển mới:

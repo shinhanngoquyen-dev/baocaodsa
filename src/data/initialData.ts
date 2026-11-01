@@ -1,4 +1,4 @@
-import { User, SupervisorInfo, TeamleadInfo, AdminSettings, DailyReport } from '../types';
+import { User, SupervisorInfo, TeamleadInfo, AdminSettings, DailyReport, PreviousMonthDataset } from '../types';
 
 export const INITIAL_SUPERVISORS: SupervisorInfo[] = [
   {
@@ -172,12 +172,12 @@ export const INITIAL_TEAMLEADS: TeamleadInfo[] = [
 ];
 
 export const INITIAL_USERS: User[] = [
-  // Cấp 1: "Tôi" - SM (Sales Manager - Đức Hải)
+  // Cấp 1: "Tôi" - SM (Sales Manager)
   {
     id: 'user_admin',
     username: 'admin',
     password: 'duchai168',
-    name: 'Đức Hải (SM)',
+    name: 'SM (Sales Manager)',
     birthday: '1988-10-15',
     email: 'admin@salenorth1.vn',
     code: 'SM-001',
@@ -232,7 +232,7 @@ export const INITIAL_ADMIN_SETTINGS: AdminSettings[] = INITIAL_TEAMLEADS.map((tl
     targetLoans: targetLoans,
     targetApp: targetApp,
     updatedAt: '2026-10-01 08:30:00',
-    updatedBy: 'Đức Hải (Admin)',
+    updatedBy: 'SM (Admin)',
   };
 });
 
@@ -331,3 +331,133 @@ export function generateInitialReports(): DailyReport[] {
 }
 
 export const INITIAL_REPORTS = generateInitialReports();
+
+// Dữ liệu mẫu tháng trước (Tháng 09/2026) cho 11 Teamlead để so sánh tăng trưởng cùng kỳ (MoM)
+export const INITIAL_PREVIOUS_MONTH_DATA: PreviousMonthDataset = {
+  monthLabel: 'Tháng 09/2026',
+  importedAt: '2026-10-01 08:00:00',
+  importedBy: 'SM (Sales Manager)',
+  records: [
+    {
+      teamleadId: 'TL01',
+      teamleadName: 'Nguyễn Văn An',
+      teamleadCode: 'TL-VP-01',
+      supervisorName: 'Giám Sát Vĩnh Phúc',
+      amount: 1720000000,
+      loans: 38,
+      app: 92,
+      newContractStaff: 3,
+      newAgents: 6,
+    },
+    {
+      teamleadId: 'TL02',
+      teamleadName: 'Trần Thị Mai',
+      teamleadCode: 'TL-VP-02',
+      supervisorName: 'Giám Sát Vĩnh Phúc',
+      amount: 1450000000,
+      loans: 32,
+      app: 80,
+      newContractStaff: 2,
+      newAgents: 5,
+    },
+    {
+      teamleadId: 'TL03',
+      teamleadName: 'Lê Hoàng Long',
+      teamleadCode: 'TL-VP-03',
+      supervisorName: 'Giám Sát Vĩnh Phúc',
+      amount: 1890000000,
+      loans: 41,
+      app: 104,
+      newContractStaff: 4,
+      newAgents: 7,
+    },
+    {
+      teamleadId: 'TL04',
+      teamleadName: 'Phạm Thu Trang',
+      teamleadCode: 'TL-VP-04',
+      supervisorName: 'Giám Sát Vĩnh Phúc',
+      amount: 1320000000,
+      loans: 29,
+      app: 74,
+      newContractStaff: 2,
+      newAgents: 4,
+    },
+    {
+      teamleadId: 'TL05',
+      teamleadName: 'Vũ Tuấn Anh',
+      teamleadCode: 'TL-TN-05',
+      supervisorName: 'Giám Sát Thái Nguyên',
+      amount: 1680000000,
+      loans: 36,
+      app: 90,
+      newContractStaff: 3,
+      newAgents: 5,
+    },
+    {
+      teamleadId: 'TL06',
+      teamleadName: 'Hoàng Mỹ Linh',
+      teamleadCode: 'TL-TN-06',
+      supervisorName: 'Giám Sát Thái Nguyên',
+      amount: 1540000000,
+      loans: 34,
+      app: 86,
+      newContractStaff: 2,
+      newAgents: 6,
+    },
+    {
+      teamleadId: 'TL07',
+      teamleadName: 'Đỗ Minh Quân',
+      teamleadCode: 'TL-TN-07',
+      supervisorName: 'Giám Sát Thái Nguyên',
+      amount: 1950000000,
+      loans: 43,
+      app: 108,
+      newContractStaff: 4,
+      newAgents: 8,
+    },
+    {
+      teamleadId: 'TL08',
+      teamleadName: 'Bùi Khánh Huyền',
+      teamleadCode: 'TL-TN-08',
+      supervisorName: 'Giám Sát Thái Nguyên',
+      amount: 1410000000,
+      loans: 31,
+      app: 79,
+      newContractStaff: 2,
+      newAgents: 4,
+    },
+    {
+      teamleadId: 'TL09',
+      teamleadName: 'Đặng Quang Huy',
+      teamleadCode: 'TL-HN-09',
+      supervisorName: 'Giám Sát Hà Nội 1',
+      amount: 2280000000,
+      loans: 48,
+      app: 125,
+      newContractStaff: 5,
+      newAgents: 9,
+    },
+    {
+      teamleadId: 'TL10',
+      teamleadName: 'Ngô Thị Bích Thảo',
+      teamleadCode: 'TL-HN-10',
+      supervisorName: 'Giám Sát Hà Nội 1',
+      amount: 1820000000,
+      loans: 40,
+      app: 98,
+      newContractStaff: 3,
+      newAgents: 6,
+    },
+    {
+      teamleadId: 'TL11',
+      teamleadName: 'Trịnh Đình Dũng',
+      teamleadCode: 'TL-HN-11',
+      supervisorName: 'Giám Sát Hà Nội 1',
+      amount: 1610000000,
+      loans: 35,
+      app: 88,
+      newContractStaff: 3,
+      newAgents: 5,
+    },
+  ],
+};

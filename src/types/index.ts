@@ -190,3 +190,58 @@ export interface SummaryKPIs {
   missingShift2Count: number;
   fullyReportedCount: number;
 }
+
+// Dữ liệu tháng trước của 1 Teamlead dùng so sánh tăng trưởng MoM
+export interface PreviousMonthTeamleadData {
+  teamleadId: string;
+  teamleadName: string;
+  teamleadCode?: string;
+  supervisorName?: string;
+  amount: number; // Volume doanh số giải ngân tháng trước
+  loans: number;  // Số HĐ giải ngân tháng trước
+  app: number;    // Số hồ sơ App tháng trước
+  newContractStaff: number; // Số HĐLĐ tuyển mới
+  newAgents: number;        // Số CTV tuyển mới
+}
+
+// Bộ dữ liệu tháng trước được import hoặc lưu trữ
+export interface PreviousMonthDataset {
+  monthLabel: string; // ví dụ: "Tháng 09/2026"
+  importedAt: string;
+  importedBy?: string;
+  records: PreviousMonthTeamleadData[];
+}
+
+// Hàng dữ liệu so sánh tăng trưởng cùng kỳ (MoM Growth)
+export interface MomGrowthRow {
+  stt: number;
+  teamleadId: string;
+  teamleadName: string;
+  teamleadCode: string;
+  supervisorName: string;
+  region: string;
+
+  // Doanh số Volume MoM
+  currentAmount: number;
+  previousAmount: number;
+  amountDiff: number;
+  amountGrowthPct: number;
+
+  // Số HĐ giải ngân Loans MoM
+  currentLoans: number;
+  previousLoans: number;
+  loansDiff: number;
+  loansGrowthPct: number;
+
+  // Hồ sơ nộp App MoM
+  currentApp: number;
+  previousApp: number;
+  appDiff: number;
+  appGrowthPct: number;
+
+  // Tuyển dụng mới MoM (HĐLĐ + CTV)
+  currentNewStaff: number;
+  previousNewStaff: number;
+  newStaffDiff: number;
+  newStaffGrowthPct: number;
+}

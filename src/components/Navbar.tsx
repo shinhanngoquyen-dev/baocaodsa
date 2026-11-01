@@ -6,7 +6,6 @@ import {
   Download,
   Users,
   BarChart3,
-  GitBranch,
   FileSpreadsheet,
   PlusCircle,
   Settings,
@@ -16,6 +15,7 @@ import {
   ShieldCheck,
   TrendingUp,
   Lock,
+  HardDriveDownload,
 } from 'lucide-react';
 import { formatDateVN } from '../utils/formatters';
 
@@ -25,6 +25,7 @@ interface NavbarProps {
   onOpenUserSwitcher: () => void;
   onOpenUserManagement?: () => void;
   onOpenTeamleadProfile?: () => void;
+  onOpenMonthEndModal?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -33,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenUserSwitcher,
   onOpenUserManagement,
   onOpenTeamleadProfile,
+  onOpenMonthEndModal,
 }) => {
   const {
     currentUser,
@@ -132,15 +134,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <button
-              onClick={() => setActiveView('hierarchy')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-                activeView === 'hierarchy'
+              onClick={() => setActiveView('mom_growth')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                activeView === 'mom_growth'
                   ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
               }`}
             >
-              <GitBranch className="w-3.5 h-3.5" />
-              Sơ Đồ Phân Cấp
+              <BarChart3 className="w-3.5 h-3.5 text-indigo-500" />
+              <span>Tăng Trưởng MoM Cùng Kỳ</span>
             </button>
 
             {(currentUser.role === 'DIRECTOR' || currentUser.role === 'SUPERVISOR') && (
@@ -167,19 +169,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {currentUser.role === 'DIRECTOR' && (
+            {currentUser.role === 'DIRECTOR' && onOpenMonthEndModal && (
               <button
-                onClick={() => {
-                  if (window.confirm('XÁC NHẬN CUỐI THÁNG:\nBạn có chắc chắn muốn reset toàn bộ số liệu doanh số của 11 team về 0 để mở chu kỳ tháng mới?\n(Chỉ Admin mới có quyền thực hiện thao tác này)')) {
-                    const res = resetMonthSales();
-                    alert(res.message);
-                  }
-                }}
-                className="px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 flex items-center gap-1 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 border border-rose-200 dark:border-rose-800 cursor-pointer"
-                title="Chỉ Admin mới có quyền reset doanh số vào cuối tháng"
+                onClick={onOpenMonthEndModal}
+                className="px-2.5 py-1.5 text-xs font-bold rounded-md transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 cursor-pointer shadow-2xs"
+                title="Tải bản sao lưu về máy và thực hiện reset thủ công cuối tháng an toàn"
               >
-                <RefreshCw className="w-3 h-3" />
-                <span>Reset Cuối Tháng</span>
+                <HardDriveDownload className="w-3.5 h-3.5" />
+                <span>Chốt Tháng & Sao Lưu</span>
               </button>
             )}
 

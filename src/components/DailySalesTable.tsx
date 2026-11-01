@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   AlertCircle,
   Calendar,
+  Zap,
+  Edit2,
 } from 'lucide-react';
 import {
   formatCurrencyVND,
@@ -17,10 +19,12 @@ import {
 
 interface DailySalesTableProps {
   onOpenReportModalForTeamlead?: (teamleadId: string) => void;
+  onOpenActiveCodeModal?: (teamleadId?: string) => void;
 }
 
 export const DailySalesTable: React.FC<DailySalesTableProps> = ({
   onOpenReportModalForTeamlead,
+  onOpenActiveCodeModal,
 }) => {
   const { filteredDailyRows, selectedDate, currentUser } = useApp();
 
@@ -166,25 +170,59 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({
                     {formatCurrencyVND(row.amount)}
                   </td>
 
-                  {/* Số HĐLĐ kích hoạt code */}
+                  {/* Số HĐLĐ kích hoạt code (Nhập tay kiểm soát) */}
                   <td className="py-3 px-3.5 text-center font-mono-numbers">
-                    {row.activeCodeContractStaff > 0 ? (
-                      <span className="font-semibold text-emerald-700 dark:text-emerald-400">
-                        {row.activeCodeContractStaff} Code
-                      </span>
+                    {onOpenActiveCodeModal ? (
+                      <button
+                        onClick={() => onOpenActiveCodeModal(row.teamleadId)}
+                        title="Click để nhập tay số Code HĐLĐ kích hoạt (Teamlead & SM kiểm soát)"
+                        className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-transparent hover:border-emerald-300 dark:hover:border-emerald-800 transition-colors cursor-pointer"
+                      >
+                        {row.activeCodeContractStaff > 0 ? (
+                          <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                            {row.activeCodeContractStaff} Code
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 group-hover:text-emerald-600">0</span>
+                        )}
+                        <Edit2 className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
                     ) : (
-                      <span className="text-slate-400">0</span>
+                      row.activeCodeContractStaff > 0 ? (
+                        <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                          {row.activeCodeContractStaff} Code
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">0</span>
+                      )
                     )}
                   </td>
 
-                  {/* Số CTV kích hoạt code */}
+                  {/* Số CTV kích hoạt code (Nhập tay kiểm soát) */}
                   <td className="py-3 px-3.5 text-center font-mono-numbers">
-                    {row.activeCodeAgents > 0 ? (
-                      <span className="font-semibold text-blue-700 dark:text-blue-400">
-                        {row.activeCodeAgents} Code
-                      </span>
+                    {onOpenActiveCodeModal ? (
+                      <button
+                        onClick={() => onOpenActiveCodeModal(row.teamleadId)}
+                        title="Click để nhập tay số Code CTV kích hoạt (Teamlead & SM kiểm soát)"
+                        className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-950/60 border border-transparent hover:border-blue-300 dark:hover:border-blue-800 transition-colors cursor-pointer"
+                      >
+                        {row.activeCodeAgents > 0 ? (
+                          <span className="font-bold text-blue-700 dark:text-blue-400">
+                            {row.activeCodeAgents} Code
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 group-hover:text-blue-600">0</span>
+                        )}
+                        <Edit2 className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
                     ) : (
-                      <span className="text-slate-400">0</span>
+                      row.activeCodeAgents > 0 ? (
+                        <span className="font-semibold text-blue-700 dark:text-blue-400">
+                          {row.activeCodeAgents} Code
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">0</span>
+                      )
                     )}
                   </td>
 

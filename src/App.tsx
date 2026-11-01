@@ -6,7 +6,6 @@ import { UnifiedDashboardTable } from './components/UnifiedDashboardTable';
 import { DailyHonorBoard } from './components/DailyHonorBoard';
 import { MtdSalesTable } from './components/MtdSalesTable';
 import { DailySalesTable } from './components/DailySalesTable';
-import { OrgHierarchyChart } from './components/OrgHierarchyChart';
 import { RoleDashboardView } from './components/RoleDashboardView';
 import { AdminTargetView } from './components/AdminTargetView';
 import { DailyReportModal } from './components/DailyReportModal';
@@ -14,6 +13,9 @@ import { AdminTargetModal } from './components/AdminTargetModal';
 import { UserSwitcherModal } from './components/UserSwitcherModal';
 import { UserManagementModal } from './components/UserManagementModal';
 import { TeamleadProfileModal } from './components/TeamleadProfileModal';
+import { ActiveCodeModal } from './components/ActiveCodeModal';
+import { MonthEndDataModal } from './components/MonthEndDataModal';
+import { MomGrowthView } from './components/MomGrowthView';
 
 function DashboardContent() {
   const { activeView, setActiveView, currentUser } = useApp();
@@ -23,9 +25,12 @@ function DashboardContent() {
   const [isUserSwitcherOpen, setIsUserSwitcherOpen] = useState(false);
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [isTeamleadProfileOpen, setIsTeamleadProfileOpen] = useState(false);
+  const [isActiveCodeModalOpen, setIsActiveCodeModalOpen] = useState(false);
+  const [isMonthEndModalOpen, setIsMonthEndModalOpen] = useState(false);
 
   const [targetTeamleadForReport, setTargetTeamleadForReport] = useState<string | undefined>(undefined);
   const [targetTeamleadForAdmin, setTargetTeamleadForAdmin] = useState<string | undefined>(undefined);
+  const [targetTeamleadForActiveCode, setTargetTeamleadForActiveCode] = useState<string | undefined>(undefined);
 
   const handleOpenReportModal = (teamleadId?: string) => {
     setTargetTeamleadForReport(teamleadId);
@@ -35,6 +40,11 @@ function DashboardContent() {
   const handleOpenAdminModal = (teamleadId?: string) => {
     setTargetTeamleadForAdmin(teamleadId);
     setIsAdminModalOpen(true);
+  };
+
+  const handleOpenActiveCodeModal = (teamleadId?: string) => {
+    setTargetTeamleadForActiveCode(teamleadId);
+    setIsActiveCodeModalOpen(true);
   };
 
   return (
@@ -47,6 +57,7 @@ function DashboardContent() {
         onOpenUserSwitcher={() => setIsUserSwitcherOpen(true)}
         onOpenUserManagement={() => setIsUserManagementOpen(true)}
         onOpenTeamleadProfile={() => setIsTeamleadProfileOpen(true)}
+        onOpenMonthEndModal={() => setIsMonthEndModalOpen(true)}
       />
 
       {/* Main Container */}
@@ -63,13 +74,14 @@ function DashboardContent() {
               onOpenAdminModal={() => handleOpenAdminModal()}
               onNavigateToMtd={() => setActiveView('mtd_table')}
               onNavigateToDaily={() => setActiveView('daily_table')}
-              onNavigateToHierarchy={() => setActiveView('hierarchy')}
+              onNavigateToMom={() => setActiveView('mom_growth')}
             />
 
             {/* BẢNG TỔNG HỢP DOANH SỐ DASHBOARD: TEAMLEAD, MTD SALES, DAILY SALES, 2 CA & CẢNH BÁO */}
             <UnifiedDashboardTable
               onOpenReportModalForTeamlead={(tlId) => handleOpenReportModal(tlId)}
               onOpenAdminModalForTeamlead={(tlId) => handleOpenAdminModal(tlId)}
+              onOpenActiveCodeModal={(tlId) => handleOpenActiveCodeModal(tlId)}
             />
 
             {/* VINH DANH CÁC TEAMLEAD BÁN TỐT TRONG NGÀY (NẰM DƯỚI BẢNG DOANH SỐ) */}
@@ -89,6 +101,7 @@ function DashboardContent() {
           <div className="space-y-6">
             <DailySalesTable
               onOpenReportModalForTeamlead={(tlId) => handleOpenReportModal(tlId)}
+              onOpenActiveCodeModal={(tlId) => handleOpenActiveCodeModal(tlId)}
             />
             
             {/* Honor board also in daily table view */}
@@ -96,18 +109,18 @@ function DashboardContent() {
           </div>
         )}
 
-        {activeView === 'hierarchy' && (
-          <div className="space-y-6">
-            <OrgHierarchyChart
-              onSelectTeamleadReport={(tlId) => handleOpenReportModal(tlId)}
-            />
-          </div>
-        )}
-
         {activeView === 'admin_targets' && (
           <div className="space-y-6">
             <AdminTargetView
               onOpenTargetModalForTeamlead={(tlId) => handleOpenAdminModal(tlId)}
+            />
+          </div>
+        )}
+
+        {activeView === 'mom_growth' && (
+          <div className="space-y-6">
+            <MomGrowthView
+              onOpenMonthEndModal={() => setIsMonthEndModalOpen(true)}
             />
           </div>
         )}
@@ -151,6 +164,7 @@ function DashboardContent() {
         onClose={() => setIsUserSwitcherOpen(false)}
         onOpenUserManagement={() => setIsUserManagementOpen(true)}
         onOpenTeamleadProfile={() => setIsTeamleadProfileOpen(true)}
+        onOpenMonthEndModal={() => setIsMonthEndModalOpen(true)}
       />
 
       <UserManagementModal
@@ -161,6 +175,18 @@ function DashboardContent() {
       <TeamleadProfileModal
         isOpen={isTeamleadProfileOpen}
         onClose={() => setIsTeamleadProfileOpen(false)}
+      />
+
+      <ActiveCodeModal
+        isOpen={isActiveCodeModalOpen}
+        onClose={() => setIsActiveCodeModalOpen(false)}
+        initialTeamleadId={targetTeamleadForActiveCode}
+      />
+
+      <MonthEndDataModal
+        isOpen={isMonthEndModalOpen}
+        onClose={() => setIsMonthEndModalOpen(false)}
+        onNavigateToMom={() => setActiveView('mom_growth')}
       />
 
     </div>

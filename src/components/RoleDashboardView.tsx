@@ -24,13 +24,13 @@ interface RoleDashboardViewProps {
   onOpenAdminModal: () => void;
   onNavigateToMtd: () => void;
   onNavigateToDaily: () => void;
-  onNavigateToHierarchy: () => void;
+  onNavigateToMom?: () => void;
 }
 
 export const RoleDashboardView: React.FC<RoleDashboardViewProps> = ({
   onOpenReportModal,
   onOpenAdminModal,
-  onNavigateToHierarchy,
+  onNavigateToMom,
 }) => {
   const {
     currentUser,
@@ -62,19 +62,21 @@ export const RoleDashboardView: React.FC<RoleDashboardViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {onNavigateToMom && (
+            <button
+              onClick={onNavigateToMom}
+              className="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              Tăng Trưởng MoM Cùng Kỳ
+            </button>
+          )}
           <button
             onClick={onOpenAdminModal}
             className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Settings className="w-3.5 h-3.5" />
             Mục Tiêu Tháng
-          </button>
-          <button
-            onClick={onNavigateToHierarchy}
-            className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <Building2 className="w-3.5 h-3.5" />
-            Sơ Đồ Phân Cấp
           </button>
         </div>
       </div>
@@ -104,6 +106,15 @@ export const RoleDashboardView: React.FC<RoleDashboardViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {onNavigateToMom && (
+            <button
+              onClick={onNavigateToMom}
+              className="px-3 py-1.5 bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg border border-blue-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              Tăng Trưởng MoM
+            </button>
+          )}
           <button
             onClick={onOpenAdminModal}
             className="px-3 py-1.5 bg-white text-blue-900 text-xs font-bold rounded-lg hover:bg-blue-50 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"

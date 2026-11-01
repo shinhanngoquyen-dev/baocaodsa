@@ -14,6 +14,8 @@ import {
   Settings,
   PlusCircle,
   HelpCircle,
+  Edit2,
+  Zap,
 } from 'lucide-react';
 import {
   formatCurrencyVND,
@@ -27,6 +29,7 @@ import { UnifiedDashboardRow } from '../types';
 interface UnifiedDashboardTableProps {
   onOpenReportModalForTeamlead?: (teamleadId: string) => void;
   onOpenAdminModalForTeamlead?: (teamleadId: string) => void;
+  onOpenActiveCodeModal?: (teamleadId?: string) => void;
 }
 
 type FilterWarningType = 'ALL' | 'WARNING_ONLY' | 'OK_ONLY';
@@ -34,6 +37,7 @@ type FilterWarningType = 'ALL' | 'WARNING_ONLY' | 'OK_ONLY';
 export const UnifiedDashboardTable: React.FC<UnifiedDashboardTableProps> = ({
   onOpenReportModalForTeamlead,
   onOpenAdminModalForTeamlead,
+  onOpenActiveCodeModal,
 }) => {
   const {
     unifiedDashboardRows,
@@ -186,7 +190,7 @@ export const UnifiedDashboardTable: React.FC<UnifiedDashboardTableProps> = ({
 
             <button
               onClick={exportToCsv}
-              className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ml-auto"
+              className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ml-auto cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               Xuất Excel
@@ -204,7 +208,7 @@ export const UnifiedDashboardTable: React.FC<UnifiedDashboardTableProps> = ({
                 onChange={(e) => setSelectedSupervisorFilter(e.target.value)}
                 className="bg-transparent text-slate-700 dark:text-slate-200 font-medium focus:outline-hidden cursor-pointer"
               >
-                <option value="ALL">Toàn Bộ 5 Giám Sát</option>
+                <option value="ALL">Toàn Bộ {supervisors.length} Giám Sát</option>
                 {supervisors.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name} ({s.code})
@@ -475,25 +479,59 @@ export const UnifiedDashboardTable: React.FC<UnifiedDashboardTableProps> = ({
                       {formatCurrencyVND(row.todayAmount)}
                     </td>
 
-                    {/* HĐLĐ kích hoạt ngày */}
+                    {/* HĐLĐ kích hoạt ngày (Nhập tay kiểm soát) */}
                     <td className="py-2.5 px-2.5 text-center font-mono-numbers">
-                      {row.todayActiveCodeHld > 0 ? (
-                        <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                          {row.todayActiveCodeHld} Code
-                        </span>
+                      {onOpenActiveCodeModal ? (
+                        <button
+                          onClick={() => onOpenActiveCodeModal(row.teamleadId)}
+                          title="Click để nhập tay số Code HĐLĐ kích hoạt (Teamlead & SM kiểm soát)"
+                          className="group inline-flex items-center gap-1 px-2 py-0.5 rounded hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-transparent hover:border-emerald-300 dark:hover:border-emerald-800 transition-colors cursor-pointer"
+                        >
+                          {row.todayActiveCodeHld > 0 ? (
+                            <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                              {row.todayActiveCodeHld} Code
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 group-hover:text-emerald-600">0</span>
+                          )}
+                          <Edit2 className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
                       ) : (
-                        <span className="text-slate-400">0</span>
+                        row.todayActiveCodeHld > 0 ? (
+                          <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                            {row.todayActiveCodeHld} Code
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">0</span>
+                        )
                       )}
                     </td>
 
-                    {/* CTV kích hoạt ngày */}
+                    {/* CTV kích hoạt ngày (Nhập tay kiểm soát) */}
                     <td className="py-2.5 px-2.5 text-center font-mono-numbers border-r border-slate-200 dark:border-slate-800">
-                      {row.todayActiveCodeCtv > 0 ? (
-                        <span className="font-bold text-blue-700 dark:text-blue-400">
-                          {row.todayActiveCodeCtv} Code
-                        </span>
+                      {onOpenActiveCodeModal ? (
+                        <button
+                          onClick={() => onOpenActiveCodeModal(row.teamleadId)}
+                          title="Click để nhập tay số Code CTV kích hoạt (Teamlead & SM kiểm soát)"
+                          className="group inline-flex items-center gap-1 px-2 py-0.5 rounded hover:bg-blue-50 dark:hover:bg-blue-950/60 border border-transparent hover:border-blue-300 dark:hover:border-blue-800 transition-colors cursor-pointer"
+                        >
+                          {row.todayActiveCodeCtv > 0 ? (
+                            <span className="font-bold text-blue-700 dark:text-blue-400">
+                              {row.todayActiveCodeCtv} Code
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 group-hover:text-blue-600">0</span>
+                          )}
+                          <Edit2 className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
                       ) : (
-                        <span className="text-slate-400">0</span>
+                        row.todayActiveCodeCtv > 0 ? (
+                          <span className="font-bold text-blue-700 dark:text-blue-400">
+                            {row.todayActiveCodeCtv} Code
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">0</span>
+                        )
                       )}
                     </td>
 

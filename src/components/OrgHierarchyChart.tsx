@@ -71,7 +71,7 @@ export const OrgHierarchyChart: React.FC<OrgHierarchyChartProps> = ({ onSelectTe
             Sơ Đồ Phân Cấp Tổ Chức (3 Cấp Quản Lý)
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Mô hình: Tôi (Đức Hải - Admin) → {supervisors.length} Giám Sát → {teamleads.length} Teamleaders
+            Mô hình: Tôi (SM - Admin) → {supervisors.length} Giám Sát → {teamleads.length} Teamleaders
           </p>
         </div>
 
@@ -95,7 +95,7 @@ export const OrgHierarchyChart: React.FC<OrgHierarchyChartProps> = ({ onSelectTe
         </div>
       </div>
 
-      {/* Level 1: "Tôi" (Admin Đức Hải) */}
+      {/* Level 1: "Tôi" (SM - Admin) */}
       <div className="flex flex-col items-center">
         <div className="w-full max-w-xl bg-linear-to-r from-emerald-800 to-teal-900 text-white p-5 rounded-2xl shadow-md border border-emerald-700 relative">
           <div className="flex items-start justify-between">
@@ -108,7 +108,7 @@ export const OrgHierarchyChart: React.FC<OrgHierarchyChartProps> = ({ onSelectTe
                   Cấp 1: SM - Sales Manager (Tôi)
                 </span>
                 <h3 className="text-lg font-extrabold text-white">
-                  Đức Hải (SM)
+                  SM (Sales Manager)
                 </h3>
                 <div className="text-xs text-emerald-200">
                   Quản lý {supervisors.length} Giám sát & {teamleads.length} Teamlead
